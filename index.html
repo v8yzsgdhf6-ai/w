@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Вопрос на миллион</title>
+<style>
+:root{
+  --bg:#0a0f3d;--bg2:#1b1370;--gold:#ffc931;--ink:#fff;--ans:#142080;--ans2:#2a3fd0;--ghost:rgba(255,255,255,.09);
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#070a2a}}
+:root[data-theme="dark"]{--bg:#070a2a}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;height:100%;overflow:hidden;color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;
+  background:radial-gradient(ellipse at 50% 0%,var(--bg2),var(--bg) 70%);display:flex;align-items:center;justify-content:center}
+.beam{position:fixed;top:-10%;width:36vw;height:130%;background:linear-gradient(rgba(255,255,255,.14),transparent 80%);filter:blur(18px);transform-origin:top;animation:sweep 7s ease-in-out infinite alternate}
+.beam.a{left:5%;transform:rotate(18deg)}.beam.b{right:5%;transform:rotate(-18deg);animation-delay:-3.5s}
+@keyframes sweep{to{transform:rotate(-14deg)}}
+.beam.b{animation-name:sweep2}@keyframes sweep2{to{transform:rotate(14deg)}}
+.names{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:1}
+.n{position:absolute;white-space:nowrap;font-weight:900;color:var(--ghost);left:-30vw;animation:drift linear infinite}
+@keyframes drift{to{transform:translateX(160vw)}}
+.stage{position:relative;z-index:3;width:min(92vw,460px);text-align:center}
+.tag{display:inline-block;background:var(--gold);color:#2b1d00;font-weight:900;padding:6px 18px;border-radius:999px;font-size:14px;margin-bottom:16px}
+.q{border:3px solid var(--gold);background:linear-gradient(#10186a,#0a1050);padding:30px 18px;border-radius:50px;font-size:clamp(32px,10vw,48px);font-weight:900;line-height:1.1;box-shadow:0 0 40px rgba(255,201,49,.35)}
+.sub{margin:16px 0 20px;min-height:22px;opacity:.85}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:14px;min-height:64px}
+button{font:inherit;font-weight:900;font-size:20px;color:#fff;padding:16px 10px;border-radius:999px;border:3px solid var(--gold);cursor:pointer;background:linear-gradient(var(--ans2),var(--ans));transition:transform .15s}
+button:focus-visible{outline:3px solid #fff;outline-offset:3px}
+#yes:hover{background:var(--gold);color:#2b1d00}
+#no.fly{position:fixed;z-index:6;width:150px;transition:left .22s cubic-bezier(.3,1.5,.5,1),top .22s cubic-bezier(.3,1.5,.5,1)}
+.win{display:none}.won .ask{display:none}.won .win{display:block}
+.win .q{font-size:clamp(28px,8.5vw,40px);animation:pop .4s cubic-bezier(.2,2,.4,1)}
+@keyframes pop{from{transform:scale(.3);opacity:0}}
+.conf{position:fixed;top:-20px;width:10px;height:16px;z-index:5;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(112vh) rotate(720deg)}}
+@media (prefers-reduced-motion:reduce){.beam,.n{animation:none}}
+</style>
+</head>
+<body>
+<div class="beam a"></div><div class="beam b"></div>
+<div class="names" id="names"></div>
+<main class="stage" id="stage">
+  <div class="ask">
+    <span class="tag">ВОПРОС НА МИЛЛИОН</span>
+    <div class="q">Ты сосал?</div>
+    <p class="sub" id="sub">Отвечай честно, зал затаил дыхание.</p>
+    <div class="btns">
+      <button id="yes">Да</button>
+      <button id="no">Нет</button>
+    </div>
+  </div>
+  <div class="win">
+    <span class="tag">ПРАВИЛЬНЫЙ ОТВЕТ</span>
+    <div class="q">Так и знали 😏 Миллион твой!</div>
+    <p class="sub">Бота всё видела.</p>
+  </div>
+</main>
+<script>
+const names=document.getElementById('names');
+for(let i=0;i<14;i++){
+  const d=document.createElement('div');d.className='n';d.textContent='Бота';
+  d.style.top=(Math.random()*95)+'vh';d.style.fontSize=(24+Math.random()*70)+'px';
+  d.style.animationDuration=(14+Math.random()*18)+'s';d.style.animationDelay=(-Math.random()*30)+'s';
+  names.appendChild(d);
+}
+const no=document.getElementById('no'),yes=document.getElementById('yes'),sub=document.getElementById('sub');
+const ph=["Звонок другу не поможет.","Это не вариант, выбирай другой.","Зал не согласен.","Ведущий делает вид, что не заметил.","Кнопка «Нет» не прошла в финал.","Бота подсказывает: «Да».","Время идёт…"];
+let n=0,s=1;
+function flee(e){
+  if(e&&e.preventDefault)e.preventDefault();
+  if(!no.classList.contains('fly')){document.body.appendChild(no);no.classList.add('fly')}
+  const m=14,w=no.offsetWidth,h=no.offsetHeight;
+  no.style.left=(m+Math.random()*(innerWidth-w-2*m))+'px';
+  no.style.top=(m+Math.random()*(innerHeight-h-2*m))+'px';
+  sub.textContent=ph[n++%ph.length];
+  s=Math.min(s+.07,1.4);yes.style.transform='scale('+s+')';
+}
+['mouseenter','pointerdown','touchstart','click','focus'].forEach(v=>no.addEventListener(v,flee,{passive:false}));
+document.addEventListener('mousemove',e=>{
+  if(!no.classList.contains('fly'))return;
+  const r=no.getBoundingClientRect();
+  if(Math.hypot(e.clientX-(r.left+r.width/2),e.clientY-(r.top+r.height/2))<90)flee();
+});
+function conf(){
+  const c=document.createElement('div');c.className='conf';
+  c.style.left=Math.random()*100+'vw';c.style.background=['#ffc931','#ff4d6d','#4dd2ff','#7dff7a'][Math.random()*4|0];
+  c.style.animationDuration=(2+Math.random()*2.5)+'s';document.body.appendChild(c);setTimeout(()=>c.remove(),4800);
+}
+yes.addEventListener('click',()=>{
+  document.getElementById('stage').classList.add('won');no.remove();
+  for(let i=0;i<80;i++)setTimeout(conf,i*30);
+  setInterval(conf,90);
+});
+</script>
+</body>
+</html>
